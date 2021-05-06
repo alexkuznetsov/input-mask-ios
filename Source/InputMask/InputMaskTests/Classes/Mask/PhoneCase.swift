@@ -1,10 +1,8 @@
 //
-//  PhoneCase.swift
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 17.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import XCTest
 @testable import InputMask
@@ -43,27 +41,27 @@ class PhoneCase: MaskTestCase {
     }
     
     func testGetPlaceholder_allSet_returnsCorrectPlaceholder() {
-        let placeholder: String = try! self.mask().placeholder()
+        let placeholder: String = try! self.mask().placeholder
         XCTAssertEqual(placeholder, "+7 (000) 000 00 00")
     }
     
     func testAcceptableTextLength_allSet_returnsCorrectCount() {
-        let acceptableTextLength: Int = try! self.mask().acceptableTextLength()
+        let acceptableTextLength: Int = try! self.mask().acceptableTextLength
         XCTAssertEqual(acceptableTextLength, 18)
     }
     
     func testTotalTextLength_allSet_returnsCorrectCount() {
-        let totalTextLength: Int = try! self.mask().totalTextLength()
+        let totalTextLength: Int = try! self.mask().totalTextLength
         XCTAssertEqual(totalTextLength, 18)
     }
     
     func testAcceptableValueLength_allSet_returnsCorrectCount() {
-        let acceptableValueLength: Int = try! self.mask().acceptableValueLength()
+        let acceptableValueLength: Int = try! self.mask().acceptableValueLength
         XCTAssertEqual(acceptableValueLength, 10)
     }
     
     func testTotalValueLength_allSet_returnsCorrectCount() {
-        let totalValueLength: Int = try! self.mask().totalValueLength()
+        let totalValueLength: Int = try! self.mask().totalValueLength
         XCTAssertEqual(totalValueLength, 10)
     }
     
@@ -78,7 +76,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -100,7 +99,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -122,7 +122,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -144,7 +145,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -166,7 +168,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -188,7 +191,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -210,7 +214,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -232,7 +237,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -254,7 +260,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -276,7 +283,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -298,7 +306,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -320,7 +329,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -342,7 +352,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -364,7 +375,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -386,7 +398,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -408,7 +421,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -430,7 +444,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -452,7 +467,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -474,7 +490,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -496,7 +513,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -518,7 +536,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -540,7 +559,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -562,7 +582,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -584,7 +605,8 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -606,9 +628,9 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -629,9 +651,9 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -652,9 +674,9 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -675,9 +697,9 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -698,9 +720,9 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -721,9 +743,9 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -744,9 +766,9 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -767,9 +789,9 @@ class PhoneCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)

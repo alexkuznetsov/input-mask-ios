@@ -1,10 +1,8 @@
 //
-//  MaskedTextFieldDelegate.swift
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 17.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import Foundation
 import UIKit
@@ -40,78 +38,89 @@ import UIKit
  */
 @IBDesignable
 open class MaskedTextFieldDelegate: NSObject, UITextFieldDelegate {
-    
-    private var _maskFormat:            String
-    private var _autocomplete:          Bool
-    private var _autocompleteOnFocus:   Bool
-    
-    public var mask: Mask
-    
-    @IBInspectable public var maskFormat: String {
-        get {
-            return self._maskFormat
-        }
-        
-        set(newFormat) {
-            self._maskFormat = newFormat
-            self.mask        = try! Mask.getOrCreate(withFormat: newFormat)
-        }
-    }
-    
-    @IBInspectable public var autocomplete: Bool {
-        get {
-            return self._autocomplete
-        }
-        
-        set(newAutocomplete) {
-            self._autocomplete = newAutocomplete
-        }
-    }
-    
-    @IBInspectable public var autocompleteOnFocus: Bool {
-        get {
-            return self._autocompleteOnFocus
-        }
-        
-        set(newAutocompleteOnFocus) {
-            self._autocompleteOnFocus = newAutocompleteOnFocus
-        }
-    }
-    
+
     open weak var listener: MaskedTextFieldDelegateListener?
+    open var onMaskedTextChangedCallback: ((_ textField: UITextField, _ value: String, _ complete: Bool) -> ())?
+
+    @IBInspectable open var primaryMaskFormat:   String
+    @IBInspectable open var autocomplete:        Bool
+    @IBInspectable open var autocompleteOnFocus: Bool
+    @IBInspectable open var autoskip:            Bool
+    @IBInspectable open var rightToLeft:         Bool
     
-    public init(format: String) {
-        self._maskFormat = format
-        self.mask = try! Mask.getOrCreate(withFormat: format)
-        self._autocomplete = false
-        self._autocompleteOnFocus = false
+    /**
+        Allows input suggestions from keyboard
+     */
+    @IBInspectable open var allowSuggestions: Bool
+    
+    /**
+     Shortly after new text is being pasted from the clipboard, ```UITextField``` receives a new value for its
+     `selectedTextRange` property from the system. This new range is not consistent with the formatted text and
+     calculated cursor position most of the time, yet it's being assigned just after ```set cursorPosition``` call.
+     
+     To ensure correct cursor position is set, it is assigned asynchronously (presumably after a vanishingly
+     small delay), if cursor movement is set to be non-atomic.
+     
+     Default is ```false```.
+     */
+    @IBInspectable open var atomicCursorMovement: Bool = false
+
+    open var affineFormats:               [String]
+    open var affinityCalculationStrategy: AffinityCalculationStrategy
+    open var customNotations:             [Notation]
+    
+    open var primaryMask: Mask {
+        return try! maskGetOrCreate(withFormat: primaryMaskFormat, customNotations: customNotations)
+    }
+    
+    public init(
+        primaryFormat: String = "",
+        autocomplete: Bool = true,
+        autocompleteOnFocus: Bool = true,
+        autoskip: Bool = false,
+        rightToLeft: Bool = false,
+        affineFormats: [String] = [],
+        affinityCalculationStrategy: AffinityCalculationStrategy = .wholeString,
+        customNotations: [Notation] = [],
+        onMaskedTextChangedCallback: ((_ textInput: UITextInput, _ value: String, _ complete: Bool) -> ())? = nil,
+        allowSuggestions: Bool = true
+    ) {
+        self.primaryMaskFormat = primaryFormat
+        self.autocomplete = autocomplete
+        self.autocompleteOnFocus = autocompleteOnFocus
+        self.autoskip = autoskip
+        self.rightToLeft = rightToLeft
+        self.affineFormats = affineFormats
+        self.affinityCalculationStrategy = affinityCalculationStrategy
+        self.customNotations = customNotations
+        self.onMaskedTextChangedCallback = onMaskedTextChangedCallback
+        self.allowSuggestions = allowSuggestions
         super.init()
     }
     
-    public override convenience init() {
-        self.init(format: "")
-    }
-    
-    open func put(text: String, into field: UITextField) {
-        let result: Mask.Result = self.mask.apply(
-            toText: CaretString(
-                string: text,
-                caretPosition: text.endIndex
-            ),
-            autocomplete: self._autocomplete
-        )
-        
-        field.text = result.formattedText.string
-        
-        let position: Int =
-            result.formattedText.string.distance(from: result.formattedText.string.startIndex, to: result.formattedText.caretPosition)
-        
-        self.setCaretPosition(position, inField: field)
-        self.listener?.textField?(
-            field,
-            didFillMandatoryCharacters: result.complete,
-            didExtractValue: result.extractedValue
-        )
+    public override init() {
+        /**
+         Interface Builder support
+         
+         https://developer.apple.com/documentation/xcode_release_notes/xcode_10_2_release_notes/swift_5_release_notes_for_xcode_10_2         
+         From known issue no.2:
+         
+         > To reduce the size taken up by Swift metadata, convenience initializers defined in Swift now only allocate an
+         > object ahead of time if they’re calling a designated initializer defined in Objective-C. In most cases, this
+         > has no effect on your program, but if your convenience initializer is called from Objective-C, the initial
+         > allocation from +alloc is released without any initializer being called.
+         */
+        self.primaryMaskFormat = ""
+        self.autocomplete = true
+        self.autocompleteOnFocus = true
+        self.autoskip = false
+        self.rightToLeft = false
+        self.affineFormats = []
+        self.affinityCalculationStrategy = .wholeString
+        self.customNotations = []
+        self.onMaskedTextChangedCallback = nil
+        self.allowSuggestions = true
+        super.init()
     }
     
     /**
@@ -119,8 +128,8 @@ open class MaskedTextFieldDelegate: NSObject, UITextFieldDelegate {
      
      - returns: Total available count of mandatory and optional characters inside the text field.
      */
-    open func placeholder() -> String {
-        return self.mask.placeholder()
+    open var placeholder: String {
+        return primaryMask.placeholder
     }
     
     /**
@@ -128,8 +137,8 @@ open class MaskedTextFieldDelegate: NSObject, UITextFieldDelegate {
      
      - returns: Minimal satisfying count of characters inside the text field.
      */
-    open func acceptableTextLength() -> Int {
-        return self.mask.acceptableTextLength()
+    open var acceptableTextLength: Int {
+        return primaryMask.acceptableTextLength
     }
     
     /**
@@ -137,8 +146,8 @@ open class MaskedTextFieldDelegate: NSObject, UITextFieldDelegate {
      
      - returns: Total available count of mandatory and optional characters inside the text field.
      */
-    open func totalTextLength() -> Int {
-        return self.mask.totalTextLength()
+    open var totalTextLength: Int {
+        return primaryMask.totalTextLength
     }
     
     /**
@@ -146,8 +155,8 @@ open class MaskedTextFieldDelegate: NSObject, UITextFieldDelegate {
      
      - returns: Minimal satisfying count of characters in extracted value.
      */
-    open func acceptableValueLength() -> Int {
-        return self.mask.acceptableValueLength()
+    open var acceptableValueLength: Int {
+        return primaryMask.acceptableValueLength
     }
     
     /**
@@ -155,200 +164,200 @@ open class MaskedTextFieldDelegate: NSObject, UITextFieldDelegate {
      
      - returns: Total available count of mandatory and optional characters for extracted value.
      */
-    open func totalValueLength() -> Int {
-        return self.mask.totalValueLength()
+    open var totalValueLength: Int {
+        return primaryMask.totalValueLength
     }
     
-    // MARK: - UITextFieldDelegate
+    @discardableResult
+    open func put(text: String, into field: UITextField, autocomplete putAutocomplete: Bool? = nil) -> Mask.Result {
+        let autocomplete: Bool = putAutocomplete ?? self.autocomplete
+        let mask:         Mask = pickMask(
+            forText: CaretString(
+                string: text,
+                caretPosition: text.endIndex,
+                caretGravity: CaretString.CaretGravity.forward(autocomplete: autocomplete)
+            )
+        )
+        
+        let result: Mask.Result = mask.apply(
+            toText: CaretString(
+                string: text,
+                caretPosition: text.endIndex,
+                caretGravity: CaretString.CaretGravity.forward(autocomplete: autocomplete)
+            )
+        )
+        
+        field.text = result.formattedText.string
+        field.cursorPosition = result.formattedText.string.distanceFromStartIndex(
+            to: result.formattedText.caretPosition
+        )
+        
+        notifyOnMaskedTextChangedListeners(forTextField: field, result: result)
+        return result
+    }
+    
+    open func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        return listener?.textFieldShouldBeginEditing?(textField) ?? true
+    }
+    
+    open func textFieldDidBeginEditing(_ textField: UITextField) {
+        if autocompleteOnFocus && (textField.text ?? "").isEmpty {
+            let result: Mask.Result = put(text: "", into: textField, autocomplete: true)
+            notifyOnMaskedTextChangedListeners(forTextField: textField, result: result)
+        }
+        listener?.textFieldDidBeginEditing?(textField)
+    }
+    
+    open func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        return listener?.textFieldShouldEndEditing?(textField) ?? true
+    }
+    
+    open func textFieldDidEndEditing(_ textField: UITextField) {
+        listener?.textFieldDidEndEditing?(textField)
+    }
+    
+    @available(iOS 10.0, *)
+    open func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+        if listener?.textFieldDidEndEditing?(textField, reason: reason) != nil {
+            listener?.textFieldDidEndEditing?(textField, reason: reason)
+        } else {
+            listener?.textFieldDidEndEditing?(textField)
+        }
+    }
     
     open func textField(
         _ textField: UITextField,
         shouldChangeCharactersIn range: NSRange,
-        replacementString string: String) -> Bool {
+        replacementString string: String
+    ) -> Bool {
+        let updatedText: String = replaceCharacters(inText: textField.text ?? "", range: range, withCharacters: string)
+        // https://stackoverflow.com/questions/52131894/shouldchangecharactersin-combined-with-suggested-text
+        if (allowSuggestions && string == " " && updatedText == " ") {
+            return true
+        }
+        let isDeletion = 0 < range.length && 0 == string.count
+        let useAutocomplete = isDeletion ? false : autocomplete
+        let useAutoskip = isDeletion ? autoskip : false
+        let caretGravity: CaretString.CaretGravity =
+            isDeletion ? .backward(autoskip: useAutoskip) : .forward(autocomplete: useAutocomplete)
         
-        let extractedValue: String
-        let complete:       Bool
+        let caretPositionInt: Int = isDeletion ? range.location : range.location + string.count
+        let caretPosition: String.Index = updatedText.startIndex(offsetBy: caretPositionInt)
+        let text = CaretString(string: updatedText, caretPosition: caretPosition, caretGravity: caretGravity)
         
-        if isDeletion(
-            inRange: range,
-            string: string
-        ) {
-            (extractedValue, complete) = self.deleteText(inRange: range, inField: textField)
+        let mask: Mask = pickMask(forText: text)
+        let result: Mask.Result = mask.apply(toText: text)
+        
+        textField.text = result.formattedText.string
+        
+        if self.atomicCursorMovement {
+            textField.cursorPosition = result.formattedText.string.distanceFromStartIndex(
+                to: result.formattedText.caretPosition
+            )
         } else {
-            (extractedValue, complete) = self.modifyText(inRange: range, inField: textField, withText: string)
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()) {
+                textField.cursorPosition = result.formattedText.string.distanceFromStartIndex(
+                    to: result.formattedText.caretPosition
+                )
+            }
         }
         
-        self.listener?.textField?(
-            textField,
-            didFillMandatoryCharacters: complete,
-            didExtractValue: extractedValue
-        )
-        let _ = self.listener?.textField?(textField, shouldChangeCharactersIn: range, replacementString: string)
+        notifyOnMaskedTextChangedListeners(forTextField: textField, result: result)
         return false
     }
     
-    open func deleteText(
-        inRange range: NSRange,
-        inField field: UITextField
-    ) -> (String, Bool) {
-        let text: String = self.replaceCharacters(
-            inText: field.text,
-            range: range,
-            withCharacters: ""
-        )
-        
-        let result: Mask.Result = self.mask.apply(
-            toText: CaretString(
-                string: text,
-                caretPosition: text.index(text.startIndex, offsetBy: range.location)
-            ),
-            autocomplete: false
-        )
-        
-        field.text = result.formattedText.string
-        self.setCaretPosition(range.location, inField: field)
-        
-        return (result.extractedValue, result.complete)
-    }
-    
-    open func modifyText(
-        inRange range: NSRange,
-        inField field: UITextField,
-        withText text: String
-    ) -> (String, Bool) {
-        let updatedText: String = self.replaceCharacters(
-            inText: field.text,
-            range: range,
-            withCharacters: text
-        )
-        
-        let result: Mask.Result = self.mask.apply(
-            toText: CaretString(
-                string: updatedText,
-                caretPosition: updatedText.index(updatedText.startIndex, offsetBy: self.caretPosition(inField: field) + text.characters.count)
-            ),
-            autocomplete: self.autocomplete
-        )
-        
-        field.text = result.formattedText.string
-        let position: Int =
-            result.formattedText.string.distance(from: result.formattedText.string.startIndex, to: result.formattedText.caretPosition)
-        self.setCaretPosition(position, inField: field)
-        
-        return (result.extractedValue, result.complete)
-    }
-    
-    open func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        return self.listener?.textFieldShouldBeginEditing?(textField) ?? true
-    }
-    
-    open func textFieldDidBeginEditing(_ textField: UITextField) {
-        if self._autocompleteOnFocus && textField.text!.isEmpty {
-            let _ = self.textField(
-                textField,
-                shouldChangeCharactersIn: NSMakeRange(0, 0),
-                replacementString: ""
-            )
-        }
-        self.listener?.textFieldDidBeginEditing?(textField)
-    }
-    
-    open func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        return self.listener?.textFieldShouldEndEditing?(textField) ?? true
-    }
-    
-    open func textFieldDidEndEditing(_ textField: UITextField) {
-        self.listener?.textFieldDidEndEditing?(textField)
-    }
-    
     open func textFieldShouldClear(_ textField: UITextField) -> Bool {
-        let shouldClear: Bool = self.listener?.textFieldShouldClear?(textField) ?? true
+        let shouldClear = listener?.textFieldShouldClear?(textField) ?? true
         if shouldClear {
-            let result: Mask.Result = self.mask.apply(
-                toText: CaretString(
-                    string: "",
-                    caretPosition: "".endIndex
-                ),
-                autocomplete: self.autocomplete
-            )
-            self.listener?.textField?(
-                textField,
-                didFillMandatoryCharacters: result.complete,
-                didExtractValue: result.extractedValue
-            )
+            let result: Mask.Result = put(text: "", into: textField, autocomplete: false)
+            notifyOnMaskedTextChangedListeners(forTextField: textField, result: result)
         }
         return shouldClear
     }
     
     open func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        return self.listener?.textFieldShouldReturn?(textField) ?? true
+        return listener?.textFieldShouldReturn?(textField) ?? true
     }
     
-    open override var debugDescription: String {
-        get {
-            return self.mask.debugDescription
+    open func replaceCharacters(inText text: String, range: NSRange, withCharacters newText: String) -> String {
+        if 0 < range.length {
+            let result = NSMutableString(string: text)
+            result.replaceCharacters(in: range, with: newText)
+            return result as String
+        } else {
+            let result = NSMutableString(string: text)
+            result.insert(newText, at: range.location)
+            return result as String
         }
     }
     
-    open override var description: String {
-        get {
-            return self.debugDescription
+    open func pickMask(forText text: CaretString) -> Mask {
+        guard !affineFormats.isEmpty
+        else { return primaryMask }
+        
+        let primaryAffinity: Int = affinityCalculationStrategy.calculateAffinity(ofMask: primaryMask, forText: text, autocomplete: autocomplete)
+        
+        var masksAndAffinities: [MaskAndAffinity] = affineFormats.map { (affineFormat: String) -> MaskAndAffinity in
+            let mask = try! maskGetOrCreate(withFormat: affineFormat, customNotations: customNotations)
+            let affinity = affinityCalculationStrategy.calculateAffinity(ofMask: mask, forText: text, autocomplete: autocomplete)
+            return MaskAndAffinity(mask: mask, affinity: affinity)
+        }.sorted { (left: MaskAndAffinity, right: MaskAndAffinity) -> Bool in
+            return left.affinity > right.affinity
         }
-    }
-    
-}
-
-internal extension MaskedTextFieldDelegate {
-    
-    func isDeletion(inRange range: NSRange, string: String) -> Bool {
-        return 0 < range.length && 0 == string.characters.count
-    }
-    
-    func replaceCharacters(inText text: String?, range: NSRange, withCharacters newText: String) -> String {
-        if let text = text {
-            if 0 < range.length {
-                let result = NSMutableString(string: text)
-                result.replaceCharacters(in: range, with: newText)
-                return result as String
-            } else {
-                let result = NSMutableString(string: text)
-                result.insert(newText, at: range.location)
-                return result as String
+        
+        var insertIndex: Int = -1
+        
+        for (index, maskAndAffinity) in masksAndAffinities.enumerated() {
+            if primaryAffinity >= maskAndAffinity.affinity {
+                insertIndex = index
+                break
             }
-        } else {
-            return ""
-        }
-    }
-    
-    func caretPosition(inField field: UITextField) -> Int {
-        // Workaround for non-optional `field.beginningOfDocument`, which could actually be nil if field doesn't have focus
-        guard field.isFirstResponder
-        else {
-            return field.text?.characters.count ?? 0
         }
         
-        if let range: UITextRange = field.selectedTextRange {
-            let selectedTextLocation: UITextPosition = range.start
-            return field.offset(from: field.beginningOfDocument, to: selectedTextLocation)
+        if (insertIndex >= 0) {
+            masksAndAffinities.insert(MaskAndAffinity(mask: primaryMask, affinity: primaryAffinity), at: insertIndex)
         } else {
-            return 0
+            masksAndAffinities.append(MaskAndAffinity(mask: primaryMask, affinity: primaryAffinity))
         }
+        
+        return masksAndAffinities.first!.mask
     }
     
-    func setCaretPosition(_ position: Int, inField field: UITextField) {
-        // Workaround for non-optional `field.beginningOfDocument`, which could actually be nil if field doesn't have focus
-        guard field.isFirstResponder
-        else {
-            return
-        }
+    open func notifyOnMaskedTextChangedListeners(forTextField textField: UITextField, result: Mask.Result) {
+        listener?.textField?(textField, didFillMandatoryCharacters: result.complete, didExtractValue: result.extractedValue)
+        onMaskedTextChangedCallback?(textField, result.extractedValue, result.complete)
+    }
 
-        if position > field.text!.characters.count {
-            return
+    private func maskGetOrCreate(withFormat format: String, customNotations: [Notation]) throws -> Mask {
+        if rightToLeft {
+            return try RTLMask.getOrCreate(withFormat: format, customNotations: customNotations)
+        }
+        return try Mask.getOrCreate(withFormat: format, customNotations: customNotations)
+    }
+    
+    private struct MaskAndAffinity {
+        let mask: Mask
+        let affinity: Int
+    }
+    
+    /**
+     Workaround to support Interface Builder delegate outlets.
+     
+     Allows assigning ```MaskedTextFieldDelegate.listener``` within the Interface Builder.
+     
+     Consider using ```MaskedTextFieldDelegate.listener``` property from your source code instead of
+     ```MaskedTextFieldDelegate.delegate``` outlet.
+     */
+    @IBOutlet public var delegate: NSObject? {
+        get {
+            return self.listener as? NSObject
         }
         
-        let from: UITextPosition = field.position(from: field.beginningOfDocument, offset: position)!
-        let to:   UITextPosition = field.position(from: from, offset: 0)!
-        field.selectedTextRange = field.textRange(from: from, to: to)
+        set(newDelegate) {
+            if let listener = newDelegate as? MaskedTextFieldDelegateListener {
+                self.listener = listener
+            }
+        }
     }
     
 }

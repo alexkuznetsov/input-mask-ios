@@ -1,169 +1,188 @@
-# InputMask
-![Version Badge](https://img.shields.io/cocoapods/v/InputMask.svg)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+<img src="https://raw.githubusercontent.com/RedMadRobot/input-mask-ios/assets/Assets/input-mask-cursor.gif" alt="Input Mask" height="40" />
 
-![Preview](https://raw.githubusercontent.com/RedMadRobot/input-mask-ios/assets/Assets/phone_input_cropped.gif "Preview")
+[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)
+[![Version Badge](https://img.shields.io/cocoapods/v/InputMask.svg)](https://cocoapods.org/pods/InputMask)
+[![SPM compatible](https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager)
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](#license)
+[![Build Status](https://travis-ci.org/RedMadRobot/input-mask-ios.svg?branch=master)](https://travis-ci.org/RedMadRobot/input-mask-ios)
+[![codebeat badge](https://codebeat.co/badges/d753a2f1-173d-4c13-a97a-1680164e7bcf)](https://codebeat.co/projects/github-com-redmadrobot-input-mask-ios-master)
+
+[![Platform](https://cdn.rawgit.com/RedMadRobot/input-mask-ios/assets/Assets/shields/platform.svg)]()[![Android](https://cdn.rawgit.com/RedMadRobot/input-mask-ios/assets/Assets/shields/android.svg)](https://github.com/RedMadRobot/input-mask-android)[![iOS](https://cdn.rawgit.com/RedMadRobot/input-mask-ios/assets/Assets/shields/ios_rect.svg)](https://github.com/RedMadRobot/input-mask-ios)[![macOS](https://cdn.rawgit.com/RedMadRobot/input-mask-ios/assets/Assets/shields/macos.svg)](https://github.com/RedMadRobot/input-mask-ios)
+
+<img src="https://raw.githubusercontent.com/RedMadRobot/input-mask-ios/assets/Assets/phone_input.gif" alt="Input Mask" width="640" />
+
+### Migration Guide: v.6
+
+This update brings breaking changes. Namely, the `autocomplete` flag is now a part of the `CaretGravity` enum, thus the `Mask::apply` call is now single-argument, as all the necessary information is included into the `CaretString` structure.
+
+`v.6` introduces the «autoskip» feature, which allows the cursor to jump over formatting blocks of symbols in the middle of the text as if they were a single char when hitting `Backspace`, and this feature also allows to trim formatting characters on backspacing at the end of the line.
+
+Make sure to take a look at our [CHANGELOG](https://github.com/RedMadRobot/input-mask-ios/blob/master/CHANGELOG.md).
 
 ## Description
-The library allows to format user input on the fly according to the provided mask and to extract valueable characters.  
 
-Masks consist of blocks of symbols, which may include:
+`Input Mask` is an [Android](https://github.com/RedMadRobot/input-mask-android) & [iOS](https://github.com/RedMadRobot/input-mask-ios) native library allowing to format user input on the fly.
 
-* `[]` — a block for valueable symbols written by user. 
+The library provides you with a text field listener; when attached, it puts separators into the text while user types it in, and gets rid of unwanted symbols, all according to custom predefined pattern.
 
-Square brackets block may contain any number of special symbols:
+This allows to reformat whole strings pasted from the clipboard, e.g. turning pasted `8 800 123-45-67` into  
+`8 (800) 123 45 67`.
 
-1. `0` — mandatory digit. For instance, `[000]` mask will allow user to enter three numbers: `123`.
-2. `9` — optional digit . For instance, `[00099]` mask will allow user to enter from three to five numbers.
-3. `А` — mandatory letter. `[AAA]` mask will allow user to enter three letters: `abc`.
-4. `а` — optional letter. `[АААааа]` mask will allow to enter from three to six letters.
-5. `_` — mandatory symbol (digit or letter).
-6. `-` — optional symbol (digit or letter).
+Each pattern allows to extract valuable symbols from the entered text, returning you the immediate result with the text field listener's callback when the text changes. Such that, you'll be able to extract `1234567` from `8 (800) 123 45 67` or `19991234567` from `1 (999) 123 45 67` with two different patterns.
 
-Other symbols inside square brackets will cause a mask initialization error.
+All separators and valuable symbol placeholders have their own syntax. We call such patterns "masks".
 
-Blocks may contain mixed types of symbols; such that, `[000AA]` will end up being divided in two groups: `[000][AA]` (this happens automatically).
+Mask examples:
 
-Blocks must not contain nested brackets. `[[00]000]` format will cause a mask initialization error.
+1. International phone numbers: `+1 ([000]) [000] [00] [00]`
+2. Local phone numbers: `([000]) [000]-[00]-[00]`
+3. Names: `[A][-----------------------------------------------------]` 
+4. Text: `[A…]`
+5. Dates: `[00]{.}[00]{.}[9900]`
+6. Serial numbers: `[AA]-[00000099]`
+7. IPv4: `[099]{.}[099]{.}[099]{.}[099]`
+8. Visa card numbers: `[0000] [0000] [0000] [0000]`
+9. MM/YY: `[00]{/}[00]`
+10. UK IBAN: `GB[00] [____] [0000] [0000] [0000] [00]`
 
-Symbols outside the square brackets will take a place in the output.
-For instance, `+7 ([000]) [000]-[0000]` mask will format the input field to the form of `+7 (123) 456-7890`. 
+## Questions & Issues
 
-* `{}` — a block for valueable yet fixed symbols, which could not be altered by the user.
+Check out our [wiki](https://github.com/RedMadRobot/input-mask-ios/wiki) for further reading.  
+Please also take a closer look at our [Known issues](#knownissues) section before you incorporate our library into your project.
 
-Symbols within the square and curly brackets form an extracted value (valueable characters).
-In other words, `[00]-[00]` and `[00]{-}[00]` will format the input to the same form of `12-34`, 
-but in the first case the value, extracted by the library, will be equal to `1234`, and in the second case it will result in `12-34`. 
+For your bugreports and feature requests please file new issues as usually.
 
-Mask format examples:
+Should you have any questions, search for closed [issues](https://github.com/RedMadRobot/input-mask-ios/issues?q=is%3Aclosed) or open new ones at **[StackOverflow](https://stackoverflow.com/questions/tagged/input-mask)** with the `input-mask` tag.
 
-1. [00000000000]
-2. {401}-[000]-[00]-[00]
-3. [000999999]
-4. {818}-[000]-[00]-[00]
-5. [A][-----------------------------------------------------]
-6. [A][_______________________________________________________________]
-7. 8 [0000000000] 
-8. 8([000])[000]-[00]-[00]
-9. [0000]{-}[00]
-10. +1 ([000]) [000] [00] [00]
+We also have a community-driven [cookbook](https://github.com/RedMadRobot/input-mask-ios/blob/master/Documentation/COOKBOOK.md) of recipes, be sure to check it out, too.
 
-# Installation
-## CocoaPods
+<a name="installation" />
+
+## Installation
+
+### CocoaPods
 
 ```ruby
 pod 'InputMask'
 ```
 
-## Carthage
+### Carthage
 
 ```ruby
 git "https://github.com/RedMadRobot/input-mask-ios.git"
 ```
 
-# Usage
-## Simple UITextField for the phone numbers
-
-Listening to the text change events of `UITextField` and simultaneously altering the entered text could be a bit tricky as
-long as you need to add, remove and replace symbols intelligently preserving the cursor position.
-
-Thus, the library provides corresponding `MaskedTextFieldDelegate` class.
-
-`MaskedTextFieldDelegate` conforms to `UITextFieldDelegate` protocol and encaspulates logic to process text edit events.
-The object might be instantiated via code or might be dropped on the Interface Builder canvas as an NSObject and then 
-wired with the corresponding `UITextField`.
-
-`MaskedTextFieldDelegate` has his own listener `MaskedTextFieldDelegateListener`, which extends `UITextFieldDelegate` protocol
-with a callback providing actual extracted value. All the `UITextFieldDelegate` calls from
-the client `UITextField` are forwarded to the `MaskedTextFieldDelegateListener` object, yet it doesn't allow to override
-`textField(textField:shouldChangeCharactersIn:replacementString:)` result, always returning `false`.
-
-![Interface Builder](https://raw.githubusercontent.com/RedMadRobot/input-mask-ios/assets/Assets/shot.png "Interface Builder")
+### Swift Package Manager
 
 ```swift
-class ViewController: UIViewController, MaskedTextFieldDelegateListener {
+dependencies: [
+    .Package(url: "https://github.com/RedMadRobot/input-mask-ios", majorVersion: 6)
+]
+```
+
+### Manual
+
+0. `git clone` this repository;
+1. Add `InputMask.xcodeproj` into your project/workspace;
+2. Go to your target's settings, add `InputMask.framework` under the `Embedded Binaries` section
+3. For `ObjC` projects:
+	* (~Xcode 8.x) make sure `Build Options` has `Embedded Content Contains Swift Code` enabled;
+	* import bridging header.
+
+<a name="knownissues" />
+
+## Known issues
+
+### `UITextFieldTextDidChange` notification and target-action `editingChanged` event
+
+`UITextField` with assigned `MaskedTextFieldDelegate` object won't issue `UITextFieldTextDidChange` notifications and `editingChanged` control events. This happens due to the `textField(_:shouldChangeCharactersIn:replacementString:)` method implementation, which always returns `false`.
+
+Consider using following workaround in case if you do really need to catch editing events:
+
+```swift
+class NotifyingMaskedTextFieldDelegate: MaskedTextFieldDelegate {
+    weak var editingListener: NotifyingMaskedTextFieldDelegateListener?
     
-    var maskedDelegate: MaskedTextFieldDelegate!
-
-    @IBOutlet weak var field: UITextField!
-    
-    open override func viewDidLoad() {
-        maskedDelegate = MaskedTextFieldDelegate(format: "{+7} ([000]) [000] [00] [00]")
-        maskedDelegate.listener = self
-
-        field.delegate = maskedDelegate
-
-        maskedDelegate.put(text: "+7 123", into: field)
+    override func textField(
+        _ textField: UITextField,
+        shouldChangeCharactersIn range: NSRange,
+        replacementString string: String
+    ) -> Bool {
+        defer {
+            self.editingListener?.onEditingChanged(inTextField: textField)
+        }
+        return super.textField(textField, shouldChangeCharactersIn: range, replacementString: string)
     }
-    
-    open func textField(
-        _ textField: UITextField, 
-        didFillMandatoryCharacters complete: Bool,
-        didExtractValue value: String
-    ) {
-        print(value)
-    }
-    
+}
+
+
+protocol NotifyingMaskedTextFieldDelegateListener: class {
+    func onEditingChanged(inTextField: UITextField)
 }
 ```
 
-Sample project might be found under `Source/Sample`
+Please, avoid at all costs sending SDK events and notifications manually.
 
-## String formatting without views
+### Carthage vs. IBDesignables, IBInspectables, views and their outlets
 
-In case you want to format a `String` somewhere in your applicaiton's code, `Mask` is the class you are looking for.
-Instantiate a `Mask` instance and feed it with your string, mocking the cursor position:
+Interface Builder struggles to support modules imported in a form of a dynamic framework. For instance, custom views annotated as IBDesignable, containing IBInspectable and IBOutlet fields aren't recognized properly from the drag'n'dropped \*.framework.
+
+In case you are using our library as a Carthage-built dynamic framework, be aware you won't be able to easily wire your `MaskedTextFieldDelegate` objects and their listeners from storyboards in your project. There is a couple of workarounds described in [the corresponding discussion](https://github.com/Carthage/Carthage/issues/335), though.
+
+Also, consider filing a radar to Apple, like [this one](https://openradar.appspot.com/23114017).
+
+### Cut action doesn't put text into the pasteboard
+
+When you cut text, characters get deleted yet you won't be able to paste them somewhere as they aren't actually in your pasteboard.
+
+iOS hardwires `UIMenuController`'s cut action to the `UITextFieldDelegate`'s `textField(_:shouldChangeCharactersIn:replacementString:)` return value. This means "Cut" behaviour actually depends on the ability to edit the text.
+
+Bad news are, our library returns `false` in `textField(_:shouldChangeCharactersIn:replacementString:)`, and heavily depends on this `false`. It would require us to rewrite a lot of logic in order to change this design, and there's no guarantee we'll be able to do so.
+
+Essentially, there's no distinct way to differentiate "Cut selection" and "Delete selection" actions on the `UITextFieldDelegate` side. However, you may consider using a workaround, which will require you to subclass `UITextField` overriding its `cut(sender:)` method like this:
 
 ```swift
-let mask: Mask = try! Mask(format: "+7 ([000]) [000] [00] [00]")
-let input: String = "+71234567890"
-let result: Mask.Result = mask.apply(
-    toText: CaretString(
-        string: input,
-        caretPosition: input.endIndex
-    ),
-    autocomplete: true // you may consider disabling autocompletion for your case
-)
-let output: String = result.formattedText.string
-```
-
-## Affine masks
-
-An experimental feature. While transforming the text, `Mask` calculates `affinity` index, which is basically an `Int` that shows the absolute rate of similarity between the text and the mask pattern.
-
-This index might be used to choose the most suitable pattern between predefined, and then applied to format the text.
-
-For the implementation, look for the `PolyMaskTextFieldDelegate` class, which inherits logic from `MaskedTextFieldDelegate`. It has its primary mask pattern and corresponding list of affine formats.
-
-``` swift
-open class ViewController: UIViewController, MaskedTextFieldDelegateListener {
-    
-    @IBOutlet weak var listener: PolyMaskTextFieldDelegate!
-    @IBOutlet weak var field: UITextField!
-    
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        listener.affineFormats = [
-            "8 ([000]) [000] [00] [00]"
-        ]
+class UITextFieldMonkeyPatch: UITextField {
+    override func cut(_ sender: Any?) {
+        copy(sender)
+        super.cut(sender)
     }
-    
-    open func textField(
-        _ textField: UITextField, 
-        didFillMandatoryCharacters complete: Bool,
-        didExtractValue value: String
-    ) {
-        print(complete)
-        print(value)
-    }
-        
 }
 ```
 
-# Compatibility with 1.3.1 and above
+From our library perspective, this looks like a highly invasive solution. Thus, in the long term, we are going to investigate a "costly" method to bring the behaviour matching the iOS SDK logic. Yet, here "long term" might mean months.
 
-In 2.0.0 version separate `MaskedTextFieldDelegateListener` callbacks have been merged into a single method providing an extracted `value` and input `complete` flag.
+### Incorrect cursor position after pasting
+
+Shortly after new text is being pasted from the clipboard, every ```UITextInput``` receives a new value for its `selectedTextRange` property from the system. This new range is not consistent with the formatted text and calculated caret position most of the time, yet it's being assigned just after ```set caretPosition``` call.
+     
+To ensure correct caret position is set, it might be assigned asynchronously (presumably after a vanishingly small delay), if caret movement is set to be non-atomic; see `MaskedTextFieldDelegate.atomicCursorMovement` property.
+
+### `MaskedTextInputListener`
+
+In case you are wondering why do we have two separate `UITextFieldDelegate` and `UITextViewDelegate` implementations, the answer is simple: prior to **iOS 11** `UITextField` and `UITextView` had different behaviour in some key situations, which made it difficult to implement common logic. 
+
+Both had the same [bug](http://jon-nolen.blogspot.com/2013/10/uitextview-returns-nil-for-uitextinput.html) with the `UITextInput.beginningOfDocument` property, which rendered impossible to use the generic `UITextInput` protocol `UITextField` and `UITextView` have in common.
+
+Since **iOS 11** most of the things received their fixes (except for the `UITextView` [edge case](https://github.com/RedMadRobot/input-mask-ios/blob/master/Source/InputMask/InputMask/Classes/View/MaskedTextInputListener.swift#L140)). In case your project is not going to support anything below 11, consider using the modern `MaskedTextInputListener`.
+
+## References
+
+The list of projects that are using this library which were kind enough to share that information.
+
+Feel free to add yours below.
+
+## Special thanks
+
+These folks rock:
+
+* Mikhail [while366](https://github.com/while366) Zhadko
+* Sergey [SergeyCHiP](https://github.com/SergeyCHiP) Germanovich
+* Luiz [LuizZak](https://github.com/LuizZak) Fernando
+* Ivan [vani](https://github.com/vani2) Vavilov
+* Diego [diegotl](https://github.com/diegotl) Trevisan
+* Martin [martintreurnicht](https://github.com/martintreurnicht) Treurnicht
 
 # License
 

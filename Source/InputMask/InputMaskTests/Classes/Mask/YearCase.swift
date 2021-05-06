@@ -1,10 +1,8 @@
 //
-//  YearCase.swift
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 03.02.29.
-//  Copyright © 29 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import XCTest
 @testable import InputMask
@@ -43,27 +41,27 @@ class YearCase: MaskTestCase {
     }
     
     func testGetPlaceholder_allSet_returnsCorrectPlaceholder() {
-        let placeholder: String = try! self.mask().placeholder()
+        let placeholder: String = try! self.mask().placeholder
         XCTAssertEqual(placeholder, "0000")
     }
     
     func testAcceptableTextLength_allSet_returnsCorrectCount() {
-        let acceptableTextLength: Int = try! self.mask().acceptableTextLength()
+        let acceptableTextLength: Int = try! self.mask().acceptableTextLength
         XCTAssertEqual(acceptableTextLength, 2)
     }
     
     func testTotalTextLength_allSet_returnsCorrectCount() {
-        let totalTextLength: Int = try! self.mask().totalTextLength()
+        let totalTextLength: Int = try! self.mask().totalTextLength
         XCTAssertEqual(totalTextLength, 4)
     }
     
     func testAcceptableValueLength_allSet_returnsCorrectCount() {
-        let acceptableValueLength: Int = try! self.mask().acceptableValueLength()
+        let acceptableValueLength: Int = try! self.mask().acceptableValueLength
         XCTAssertEqual(acceptableValueLength, 2)
     }
     
     func testTotalValueLength_allSet_returnsCorrectCount() {
-        let totalValueLength: Int = try! self.mask().totalValueLength()
+        let totalValueLength: Int = try! self.mask().totalValueLength
         XCTAssertEqual(totalValueLength, 4)
     }
     
@@ -78,7 +76,8 @@ class YearCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -100,7 +99,8 @@ class YearCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -122,7 +122,8 @@ class YearCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -144,7 +145,8 @@ class YearCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         

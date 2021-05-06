@@ -1,9 +1,8 @@
 //
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 10.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import Foundation
 
@@ -48,32 +47,41 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
         public let complete: Bool
         
         public var debugDescription: String {
-            get {
-                return "FORMATTED TEXT: \(self.formattedText)\nEXTRACTED VALUE: \(self.extractedValue)\nAFFINITY: \(self.affinity)\nCOMPLETE: \(self.complete)"
-            }
+            return "FORMATTED TEXT: \(self.formattedText)\nEXTRACTED VALUE: \(self.extractedValue)\nAFFINITY: \(self.affinity)\nCOMPLETE: \(self.complete)"
         }
         
         public var description: String {
-            get {
-                return self.debugDescription
-            }
+            return self.debugDescription
+        }
+
+        /**
+         Produce a reversed ```Result``` with reversed formatted text (```CaretString```) and reversed extracted value.
+         */
+        func reversed() -> Result {
+            return Result(
+                formattedText: self.formattedText.reversed(),
+                extractedValue: self.extractedValue.reversed,
+                affinity: affinity,
+                complete: complete
+            )
         }
     }
     
     private let initialState: State
-    private static var cache: [String : Mask] = [:]
+    private static var cache: [String: Mask] = [:]
     
     /**
      Constructor.
      
      - parameter format: mask format.
+     - parameter customNotations: a list of custom rules to compile square bracket ```[]``` groups of format symbols.
      
      - returns: Initialized ```Mask``` instance.
      
      - throws: ```CompilerError``` if format string is incorrect.
      */
-    public required init(format: String) throws {
-        self.initialState = try Compiler().compile(formatString: format)
+    public required init(format: String, customNotations: [Notation] = []) throws {
+        self.initialState = try Compiler(customNotations: customNotations).compile(formatString: format)
     }
     
     /**
@@ -85,62 +93,83 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
      - returns: Previously cached ```Mask``` object for requested format string. If such it doesn't exist in cache, the
      object is constructed, cached and returned.
      */
-    public static func getOrCreate(withFormat format: String) throws -> Mask {
+    public class func getOrCreate(withFormat format: String, customNotations: [Notation] = []) throws -> Mask {
         if let cachedMask: Mask = cache[format] {
             return cachedMask
         } else {
-            let mask: Mask = try Mask(format: format)
+            let mask: Mask = try Mask(format: format, customNotations: customNotations)
             cache[format] = mask
             return mask
         }
     }
     
     /**
+     Check your mask format is valid.
+     
+     - parameter format: mask format.
+     - parameter customNotations: a list of custom rules to compile square bracket ```[]``` groups of format symbols.
+     
+     - returns: ```true``` if this format coupled with custom notations will compile into a working ```Mask``` object.
+     Otherwise ```false```.
+     */
+    public class func isValid(format: String, customNotations: [Notation] = []) -> Bool {
+        return nil != (try? self.init(format: format, customNotations: customNotations))
+    }
+    
+    /**
      Apply mask to the user input string.
      
      - parameter toText: user input string with current cursor position
+     - parameter autocomplete: enable text autocompletion; `false` by default
      
      - returns: Formatted text with extracted value an adjusted cursor position.
      */
-    public func apply(toText text: CaretString, autocomplete: Bool = false) -> Result {
-        let iterator: CaretStringIterator = CaretStringIterator(caretString: text)
+    public func apply(toText text: CaretString) -> Result {
+        let iterator: CaretStringIterator = self.makeIterator(forText: text)
         
         var affinity:               Int     = 0
         var extractedValue:         String  = ""
         var modifiedString:         String  = ""
-        var modifiedCaretPosition:  Int     =
-            text.string.distance(from: text.string.startIndex, to: text.caretPosition) 
+        var modifiedCaretPosition:  Int     = text.string.distanceFromStartIndex(to: text.caretPosition)
         
-        var state:       State      = self.initialState
-        var beforeCaret: Bool       = iterator.beforeCaret()
-        var character:   Character? = iterator.next()
+        var state: State        = self.initialState
+        var autocompletionStack = AutocompletionStack()
+        
+        var insertionAffectsCaret: Bool       = iterator.insertionAffectsCaret()
+        var deletionAffectsCaret:  Bool       = iterator.deletionAffectsCaret()
+        var character:             Character? = iterator.next()
         
         while let char: Character = character {
             if let next: Next = state.accept(character: char) {
+                if deletionAffectsCaret {
+                    autocompletionStack.pushBack(next: state.autocomplete())
+                }
                 state = next.state
                 modifiedString += nil != next.insert ? String(next.insert!) : ""
                 extractedValue += nil != next.value  ? String(next.value!)  : ""
                 if next.pass {
-                    beforeCaret = iterator.beforeCaret()
+                    insertionAffectsCaret = iterator.insertionAffectsCaret()
+                    deletionAffectsCaret  = iterator.deletionAffectsCaret()
                     character   = iterator.next()
                     affinity   += 1
                 } else {
-                    if beforeCaret && nil != next.insert {
+                    if insertionAffectsCaret && nil != next.insert {
                         modifiedCaretPosition += 1
                     }
                     affinity -= 1
                 }
             } else {
-                if iterator.beforeCaret() {
+                if deletionAffectsCaret {
                     modifiedCaretPosition -= 1
                 }
-                beforeCaret = iterator.beforeCaret()
+                insertionAffectsCaret = iterator.insertionAffectsCaret()
+                deletionAffectsCaret  = iterator.deletionAffectsCaret()
                 character   = iterator.next()
                 affinity   -= 1
             }
         }
         
-        while autocomplete && beforeCaret, let next: Next = state.autocomplete() {
+        while text.caretGravity.autocomplete && insertionAffectsCaret, let next: Next = state.autocomplete() {
             state = next.state
             modifiedString += nil != next.insert ? String(next.insert!) : ""
             extractedValue += nil != next.value  ? String(next.value!)  : ""
@@ -149,10 +178,28 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
             }
         }
         
+        while text.caretGravity.autoskip && !autocompletionStack.isEmpty {
+            let skip: Next = autocompletionStack.pop()
+            if modifiedString.count == modifiedCaretPosition {
+                if nil != skip.insert && skip.insert == modifiedString.last {
+                    modifiedString.removeLast()
+                    modifiedCaretPosition -= 1
+                }
+                if nil != skip.value && skip.value == extractedValue.last {
+                    extractedValue.removeLast()
+                }
+            } else {
+                if nil != skip.insert {
+                    modifiedCaretPosition -= 1
+                }
+            }
+        }
+        
         return Result(
             formattedText: CaretString(
                 string: modifiedString,
-                caretPosition: modifiedString.index(modifiedString.startIndex, offsetBy: modifiedCaretPosition)
+                caretPosition: modifiedString.startIndex(offsetBy: modifiedCaretPosition),
+                caretGravity: text.caretGravity
             ),
             extractedValue: extractedValue,
             affinity: affinity,
@@ -165,7 +212,7 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
      
      - returns: Placeholder string.
      */
-    public func placeholder() -> String {
+    public var placeholder: String {
         return self.appendPlaceholder(withState: self.initialState, placeholder: "")
     }
     
@@ -174,17 +221,8 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
      
      - returns: Minimal satisfying count of characters inside the text field.
      */
-    public func acceptableTextLength() -> Int {
-        var state: State? = self.initialState
-        var length: Int = 0
-        while let s: State = state, !(state is EOLState) {
-            if s is FixedState || s is FreeState || s is ValueState {
-                length += 1
-            }
-            state = s.child
-        }
-        
-        return length
+    public var acceptableTextLength: Int {
+        return self.countStates(ofTypes: [FixedState.self, FreeState.self, ValueState.self])
     }
     
     /**
@@ -192,17 +230,8 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
      
      - returns: Total available count of mandatory and optional characters inside the text field.
      */
-    public func totalTextLength() -> Int {
-        var state: State? = self.initialState
-        var length: Int = 0
-        while let s: State = state, !(state is EOLState) {
-            if s is FixedState || s is FreeState || s is ValueState || s is OptionalValueState {
-                length += 1
-            }
-            state = s.child
-        }
-        
-        return length
+    public var totalTextLength: Int {
+        return self.countStates(ofTypes: [FixedState.self, FreeState.self, ValueState.self, OptionalValueState.self])
     }
     
     /**
@@ -210,7 +239,7 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
      
      - returns: Minimal satisfying count of characters in extracted value.
      */
-    public func acceptableValueLength() -> Int {
+    public var acceptableValueLength: Int {
         var state: State? = self.initialState
         var length: Int = 0
         while let s: State = state, !(state is EOLState) {
@@ -228,7 +257,7 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
      
      - returns: Total available count of mandatory and optional characters for extracted value.
      */
-    public func totalValueLength() -> Int {
+    public var totalValueLength: Int {
         var state: State? = self.initialState
         var length: Int = 0
         while let s: State = state, !(state is EOLState) {
@@ -242,18 +271,44 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
     }
     
     public var debugDescription: String {
-        get {
-            return self.initialState.debugDescription
-        }
+        return self.initialState.debugDescription
     }
     
     public var description: String {
-        get {
-            return self.debugDescription
+        return self.debugDescription
+    }
+    
+    func makeIterator(forText text: CaretString) -> CaretStringIterator {
+        return CaretStringIterator(caretString: text)
+    }
+    
+    /**
+     While scanning through the input string in the `.apply(…)` method, the mask builds a graph of autocompletion steps.
+     This graph accumulates the results of `.autocomplete()` calls for each consecutive `State`, acting as a `stack` of
+     `Next` object instances.
+     
+     Each time the `State` returns `null` for its `.autocomplete()`, the graph resets empty.
+     */
+    private struct AutocompletionStack {
+        private var stack = [Next]()
+        
+        var isEmpty: Bool { stack.isEmpty }
+        
+        mutating func pushBack(next: Next?) {
+            if let next: Next = next {
+                stack.append(next)
+            } else {
+                stack.removeAll()
+            }
         }
+        
+        mutating func pop() -> Next { return stack.removeLast() }
+        
+        mutating func removeAll() { stack.removeAll() }
     }
     
 }
+
 
 private extension Mask {
     
@@ -275,27 +330,36 @@ private extension Mask {
         
         if let state = state as? OptionalValueState {
             switch state.type {
-                case .AlphaNumeric:
+                case .alphaNumeric:
                     return self.appendPlaceholder(withState: state.child, placeholder: placeholder + "-")
                 
-                case .Literal:
+                case .literal:
                     return self.appendPlaceholder(withState: state.child, placeholder: placeholder + "a")
                 
-                case .Numeric:
+                case .numeric:
                     return self.appendPlaceholder(withState: state.child, placeholder: placeholder + "0")
+                
+                case .custom(let char, _):
+                    return self.appendPlaceholder(withState: state.child, placeholder: placeholder + String(char))
             }
         }
         
         if let state = state as? ValueState {
             switch state.type {
-                case .AlphaNumeric:
+                case .alphaNumeric:
                     return self.appendPlaceholder(withState: state.child, placeholder: placeholder + "-")
                     
-                case .Literal:
+                case .literal:
                     return self.appendPlaceholder(withState: state.child, placeholder: placeholder + "a")
                     
-                case .Numeric:
+                case .numeric:
                     return self.appendPlaceholder(withState: state.child, placeholder: placeholder + "0")
+                
+                case .ellipsis:
+                    return placeholder
+                
+                case .custom(let char, _):
+                    return self.appendPlaceholder(withState: state.child, placeholder: placeholder + String(char))
             }
         }
         
@@ -305,13 +369,28 @@ private extension Mask {
     func noMandatoryCharactersLeftAfterState(_ state: State) -> Bool {
         if (state is EOLState) {
             return true
-        } else if (state is FixedState
-                || state is FreeState
-                || state is ValueState) {
+        } else if let valueState = state as? ValueState {
+            return valueState.isElliptical
+        } else if (state is FixedState) {
             return false
         } else {
             return self.noMandatoryCharactersLeftAfterState(state.nextState())
         }
+    }
+        
+    func countStates(ofTypes stateTypes: [State.Type]) -> Int {
+        var state: State? = self.initialState
+        var length: Int = 0
+        while let s: State = state, !(state is EOLState) {
+            for stateType in stateTypes {
+                if type(of: s) == stateType {
+                    length += 1
+                }
+            }
+            state = s.child
+        }
+        
+        return length
     }
     
 }

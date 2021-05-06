@@ -1,9 +1,8 @@
 //
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 10.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import XCTest
 @testable import InputMask
@@ -42,27 +41,27 @@ class DayMonthYearShortCase: MaskTestCase {
     }
     
     func testGetPlaceholder_allSet_returnsCorrectPlaceholder() {
-        let placeholder: String = try! self.mask().placeholder()
+        let placeholder: String = try! self.mask().placeholder
         XCTAssertEqual(placeholder, "00.00.0000")
     }
     
     func testAcceptableTextLength_allSet_returnsCorrectCount() {
-        let acceptableTextLength: Int = try! self.mask().acceptableTextLength()
+        let acceptableTextLength: Int = try! self.mask().acceptableTextLength
         XCTAssertEqual(acceptableTextLength, 8)
     }
     
     func testTotalTextLength_allSet_returnsCorrectCount() {
-        let totalTextLength: Int = try! self.mask().totalTextLength()
+        let totalTextLength: Int = try! self.mask().totalTextLength
         XCTAssertEqual(totalTextLength, 10)
     }
     
     func testAcceptableValueLength_allSet_returnsCorrectCount() {
-        let acceptableValueLength: Int = try! self.mask().acceptableValueLength()
+        let acceptableValueLength: Int = try! self.mask().acceptableValueLength
         XCTAssertEqual(acceptableValueLength, 8)
     }
     
     func testTotalValueLength_allSet_returnsCorrectCount() {
-        let totalValueLength: Int = try! self.mask().totalValueLength()
+        let totalValueLength: Int = try! self.mask().totalValueLength
         XCTAssertEqual(totalValueLength, 10)
     }
     
@@ -77,7 +76,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -100,7 +100,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -123,7 +124,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -146,7 +148,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -169,7 +172,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -192,7 +196,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -215,7 +220,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -238,7 +244,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -261,7 +268,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -284,7 +292,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -307,7 +316,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -330,7 +340,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -353,7 +364,32 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
+            )
+        )
+        
+        XCTAssertEqual(expectedString, result.formattedText.string)
+        XCTAssertEqual(expectedCaret, result.formattedText.caretPosition)
+        XCTAssertEqual(expectedValue, result.extractedValue)
+        
+        XCTAssertEqual(3, result.affinity)
+        XCTAssertEqual(false, result.complete)
+    }
+    
+    func testApply_1111_ThirdIndexGravityBackward_returns_11dot11_ThirdIndex() {
+        let inputString: String         = "1111"
+        let inputCaret:  String.Index   = inputString.index(inputString.startIndex, offsetBy: 2)
+        
+        let expectedString: String       = "11.11"
+        let expectedCaret:  String.Index = expectedString.index(expectedString.startIndex, offsetBy: 2)
+        let expectedValue:  String       = "11.11"
+        
+        let result: Mask.Result = try! self.mask().apply(
+            toText: CaretString(
+                string: inputString,
+                caretPosition: inputCaret,
+                caretGravity: .backward(autoskip: false)
             )
         )
         
@@ -376,7 +412,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -399,7 +436,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -422,7 +460,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -445,7 +484,8 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -468,9 +508,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -492,9 +532,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -516,9 +556,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -540,9 +580,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -564,9 +604,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -588,9 +628,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -612,9 +652,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -636,9 +676,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -660,9 +700,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
@@ -684,9 +724,9 @@ class DayMonthYearShortCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)

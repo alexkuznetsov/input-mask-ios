@@ -1,9 +1,8 @@
 //
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 17.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import Foundation
 
@@ -18,8 +17,8 @@ import Foundation
  */
 class CaretStringIterator {
     
-    private let caretString: CaretString
-    private var currentIndex: String.Index
+    let caretString: CaretString
+    var currentIndex: String.Index
     
     /**
      Constructor
@@ -33,43 +32,22 @@ class CaretStringIterator {
         self.currentIndex = self.caretString.string.startIndex
     }
     
-    /**
-     Inspect, whether ```CaretStringIterator``` has reached ```CaretString.caretPosition``` or not.
-     
-     Each ```CaretString``` object contains cursor position for its ```CaretString.string```. 
-     
-     For the ```Mask``` instance it is important to know, whether it should adjust the cursor position or not when
-     inserting new symbols into the formatted line.
-     
-     **Example**
-     
-     Let the ```CaretString``` instance contains two symbols, with the caret at the end of the line.
-     ```
-     string:    ab
-     caret:      ^
-     ```
-     In this case ```CaretStringIterator.beforeCaret()``` will always return ```true``` until there's no more
-     characters left in the line to iterate over.
-     
-     **Example 2**
-     
-     Let the ```CaretString``` instance contains two symbols, with the caret at the beginning of the line.
-     ```
-     string:    ab
-     caret:     ^
-     ```
-     In this case ```CaretStringIterator.beforeCaret()``` will only return ```true``` for the first iteration. After the
-     ```next()``` method is fired, ```beforeCaret()``` will return false.
-     
-     - returns: ```True```, if current iterator position is less than or equal to ```CaretString.caretPosition```
-     */
-    func beforeCaret() -> Bool {
-        let startIndex:     String.Index = self.caretString.string.startIndex
-        let currentIndex:   Int          = self.caretString.string.distance(from: startIndex, to: self.currentIndex)
-        let caretPosition:  Int          = self.caretString.string.distance(from: startIndex, to: self.caretString.caretPosition)
+    func insertionAffectsCaret() -> Bool {
+        let currentIndex:  Int = self.caretString.string.distanceFromStartIndex(to: self.currentIndex)
+        let caretPosition: Int = self.caretString.string.distanceFromStartIndex(to: self.caretString.caretPosition)
         
-        return self.currentIndex <= self.caretString.caretPosition
-            || (0 == currentIndex && 0 == caretPosition)
+        switch self.caretString.caretGravity {
+            case .backward:
+                return self.currentIndex < self.caretString.caretPosition
+            
+            case .forward:
+                return self.currentIndex <= self.caretString.caretPosition
+                    || (0 == currentIndex && 0 == caretPosition)
+        }
+    }
+    
+    func deletionAffectsCaret() -> Bool {
+        return self.currentIndex < self.caretString.caretPosition
     }
     
     /**
@@ -84,7 +62,7 @@ class CaretStringIterator {
             return nil
         }
         
-        let character: Character = self.caretString.string.characters[self.currentIndex]
+        let character: Character = self.caretString.string[self.currentIndex]
         self.currentIndex = self.caretString.string.index(after: self.currentIndex)
         return character
     }

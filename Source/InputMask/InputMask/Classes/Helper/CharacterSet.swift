@@ -1,20 +1,19 @@
 //
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 10.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import Foundation
 
 
 /**
- Utility extension to make ```NSCharacterSet``` interact with ```Character``` instances.
+ Utility extension to make ```CharacterSet``` interact with ```Character``` instances.
  */
 extension CharacterSet {
     
     /**
-     Implements ```NSCharacterSet.characterIsMember(:unichar)``` for ```Character``` instances.
+     Implements ```CharacterSet.characterIsMember(:unichar)``` for ```Character``` instances.
      */
     func isMember(character: Character) -> Bool {
         let string: String = String(character)

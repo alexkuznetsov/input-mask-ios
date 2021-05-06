@@ -1,9 +1,8 @@
 //
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 16.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import Foundation
 
@@ -32,7 +31,7 @@ class State: CustomDebugStringConvertible, CustomStringConvertible {
      - returns: ```Next``` object instance with a set of actions that should take place when the user input character is
      accepted.
      
-     - throws: Fatal error, if the method is not implemeted.
+     - throws: Fatal error, if the method is not implemented.
      */
     /* abstract */ func accept(character char: Character) -> Next? {
         fatalError("accept(character:) method is abstract")
@@ -72,15 +71,11 @@ class State: CustomDebugStringConvertible, CustomStringConvertible {
     }
     
     var debugDescription: String {
-        get {
-            return "BASE -> " + (nil != self.child ? self.child!.debugDescription : "nil")
-        }
+        return "BASE -> " + (nil != self.child ? self.child!.debugDescription : "nil")
     }
     
     var description: String {
-        get {
-            return self.debugDescription
-        }
+        return self.debugDescription
     }
     
 }

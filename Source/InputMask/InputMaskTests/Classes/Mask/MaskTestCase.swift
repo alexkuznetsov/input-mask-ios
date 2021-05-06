@@ -1,9 +1,8 @@
 //
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 10.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import XCTest
 @testable import InputMask
@@ -23,7 +22,7 @@ class MaskTestCase: XCTestCase {
         do {
             _ = try Mask(format: "[[00]000]")
             XCTFail()
-        } catch Compiler.CompilerError.WrongFormat {
+        } catch Compiler.CompilerError.wrongFormat {
             // success
         } catch {
             XCTFail()
@@ -33,7 +32,7 @@ class MaskTestCase: XCTestCase {
     func testInit_mixedCharacters_initialized() {
         do {
             _ = try Mask(format: "[00000Aa]")
-        } catch Compiler.CompilerError.WrongFormat {
+        } catch Compiler.CompilerError.wrongFormat {
             XCTFail()
         } catch {
             XCTFail()

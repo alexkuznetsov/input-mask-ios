@@ -1,10 +1,8 @@
 //
-//  ViewController.swift
-//  Sample
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 17.08.28.
-//  Copyright © 28 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import UIKit
 import InputMask
@@ -12,11 +10,12 @@ import InputMask
 
 open class ViewController: UIViewController, MaskedTextFieldDelegateListener {
     
-    @IBOutlet weak var listener: PolyMaskTextFieldDelegate!
+    @IBOutlet weak var listener: MaskedTextFieldDelegate!
     @IBOutlet weak var field: UITextField!
     
     open override func viewDidLoad() {
         super.viewDidLoad()
+        listener.affinityCalculationStrategy = .prefix
         listener.affineFormats = [
             "8 ([000]) [000] [00] [00]"
         ]

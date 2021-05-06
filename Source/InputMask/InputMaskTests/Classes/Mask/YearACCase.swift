@@ -1,10 +1,8 @@
 //
-//  YearACCase.swift
-//  InputMask
+// Project «InputMask»
+// Created by Jeorge Taflanidi
 //
-//  Created by Egor Taflanidi on 09.01.29.
-//  Copyright © 29 Heisei Egor Taflanidi. All rights reserved.
-//
+
 
 import XCTest
 @testable import InputMask
@@ -43,27 +41,27 @@ class YearACCase: MaskTestCase {
     }
     
     func testGetPlaceholder_allSet_returnsCorrectPlaceholder() {
-        let placeholder: String = try! self.mask().placeholder()
+        let placeholder: String = try! self.mask().placeholder
         XCTAssertEqual(placeholder, "0000 AC")
     }
     
     func testAcceptableTextLength_allSet_returnsCorrectCount() {
-        let acceptableTextLength: Int = try! self.mask().acceptableTextLength()
+        let acceptableTextLength: Int = try! self.mask().acceptableTextLength
         XCTAssertEqual(acceptableTextLength, 4)
     }
     
     func testTotalTextLength_allSet_returnsCorrectCount() {
-        let totalTextLength: Int = try! self.mask().totalTextLength()
+        let totalTextLength: Int = try! self.mask().totalTextLength
         XCTAssertEqual(totalTextLength, 7)
     }
     
     func testAcceptableValueLength_allSet_returnsCorrectCount() {
-        let acceptableValueLength: Int = try! self.mask().acceptableValueLength()
+        let acceptableValueLength: Int = try! self.mask().acceptableValueLength
         XCTAssertEqual(acceptableValueLength, 1)
     }
     
     func testTotalValueLength_allSet_returnsCorrectCount() {
-        let totalValueLength: Int = try! self.mask().totalValueLength()
+        let totalValueLength: Int = try! self.mask().totalValueLength
         XCTAssertEqual(totalValueLength, 4)
     }
     
@@ -78,7 +76,8 @@ class YearACCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -86,7 +85,7 @@ class YearACCase: MaskTestCase {
         XCTAssertEqual(expectedCaret, result.formattedText.caretPosition)
         XCTAssertEqual(expectedValue, result.extractedValue)
         
-        XCTAssertEqual(false, result.complete)
+        XCTAssertEqual(true, result.complete)
     }
     
     func testApply_11_returns_11() {
@@ -100,7 +99,8 @@ class YearACCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -108,7 +108,7 @@ class YearACCase: MaskTestCase {
         XCTAssertEqual(expectedCaret, result.formattedText.caretPosition)
         XCTAssertEqual(expectedValue, result.extractedValue)
         
-        XCTAssertEqual(false, result.complete)
+        XCTAssertEqual(true, result.complete)
     }
     
     func testApply_111_returns_111() {
@@ -122,7 +122,8 @@ class YearACCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -130,7 +131,7 @@ class YearACCase: MaskTestCase {
         XCTAssertEqual(expectedCaret, result.formattedText.caretPosition)
         XCTAssertEqual(expectedValue, result.extractedValue)
         
-        XCTAssertEqual(false, result.complete)
+        XCTAssertEqual(true, result.complete)
     }
     
     func testApply_1111_returns_1111() {
@@ -144,7 +145,8 @@ class YearACCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -152,7 +154,7 @@ class YearACCase: MaskTestCase {
         XCTAssertEqual(expectedCaret, result.formattedText.caretPosition)
         XCTAssertEqual(expectedValue, result.extractedValue)
         
-        XCTAssertEqual(false, result.complete)
+        XCTAssertEqual(true, result.complete)
     }
     
     func testApply_11112_returns_1111spaceAC() {
@@ -166,7 +168,8 @@ class YearACCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: false)
             )
         )
         
@@ -188,9 +191,9 @@ class YearACCase: MaskTestCase {
         let result: Mask.Result = try! self.mask().apply(
             toText: CaretString(
                 string: inputString,
-                caretPosition: inputCaret
-            ),
-            autocomplete: true
+                caretPosition: inputCaret,
+                caretGravity: .forward(autocomplete: true)
+            )
         )
         
         XCTAssertEqual(expectedString, result.formattedText.string)
