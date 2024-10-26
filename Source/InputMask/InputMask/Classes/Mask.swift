@@ -3,6 +3,7 @@
 // Created by Jeorge Taflanidi
 //
 
+#if canImport(Foundation)
 
 import Foundation
 
@@ -12,10 +13,10 @@ import Foundation
  
  Iterates over user input. Creates formatted strings from it. Extracts value specified by mask format.
  
- Provided mask format string is translated by the ```Compiler``` class into a set of states, which define the formatting
+ Provided mask format string is translated by the ``Compiler`` class into a set of states, which define the formatting
  and value extraction.
  
- - seealso: ```Compiler```, ```State``` and ```CaretString``` classes.
+ - seealso: ``Compiler``, ``State`` and ``CaretString`` classes.
  */
 public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
     
@@ -46,6 +47,11 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
          */
         public let complete: Bool
         
+        /**
+         Placeholder for remaining text.
+         */
+        public let tailPlaceholder: String
+        
         public var debugDescription: String {
             return "FORMATTED TEXT: \(self.formattedText)\nEXTRACTED VALUE: \(self.extractedValue)\nAFFINITY: \(self.affinity)\nCOMPLETE: \(self.complete)"
         }
@@ -55,14 +61,15 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
         }
 
         /**
-         Produce a reversed ```Result``` with reversed formatted text (```CaretString```) and reversed extracted value.
+         Produce a reversed ``Mask/Result`` with reversed formatted text (``CaretString``) and reversed extracted value.
          */
         func reversed() -> Result {
             return Result(
                 formattedText: self.formattedText.reversed(),
                 extractedValue: self.extractedValue.reversed,
                 affinity: affinity,
-                complete: complete
+                complete: complete,
+                tailPlaceholder: tailPlaceholder.reversed
             )
         }
     }
@@ -74,11 +81,11 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
      Constructor.
      
      - parameter format: mask format.
-     - parameter customNotations: a list of custom rules to compile square bracket ```[]``` groups of format symbols.
+     - parameter customNotations: a list of custom rules to compile square bracket `[]` groups of format symbols.
      
-     - returns: Initialized ```Mask``` instance.
+     - returns: Initialized ``Mask`` instance.
      
-     - throws: ```CompilerError``` if format string is incorrect.
+     - throws: ``Compiler/CompilerError`` if format string is incorrect.
      */
     public required init(format: String, customNotations: [Notation] = []) throws {
         self.initialState = try Compiler(customNotations: customNotations).compile(formatString: format)
@@ -87,10 +94,10 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
     /**
      Constructor.
      
-     Operates over own ```Mask``` cache where initialized ```Mask``` objects are stored under corresponding format key:
-     ```[format : mask]```
+     Operates over own ``Mask`` cache where initialized ``Mask`` objects are stored under corresponding format key:
+     `[format : mask]`
      
-     - returns: Previously cached ```Mask``` object for requested format string. If such it doesn't exist in cache, the
+     - returns: Previously cached ``Mask`` object for requested format string. If such it doesn't exist in cache, the
      object is constructed, cached and returned.
      */
     public class func getOrCreate(withFormat format: String, customNotations: [Notation] = []) throws -> Mask {
@@ -107,10 +114,10 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
      Check your mask format is valid.
      
      - parameter format: mask format.
-     - parameter customNotations: a list of custom rules to compile square bracket ```[]``` groups of format symbols.
+     - parameter customNotations: a list of custom rules to compile square bracket `[]` groups of format symbols.
      
-     - returns: ```true``` if this format coupled with custom notations will compile into a working ```Mask``` object.
-     Otherwise ```false```.
+     - returns: `true` if this format coupled with custom notations will compile into a working ``Mask`` object.
+     Otherwise `false`.
      */
     public class func isValid(format: String, customNotations: [Notation] = []) -> Bool {
         return nil != (try? self.init(format: format, customNotations: customNotations))
@@ -178,6 +185,9 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
             }
         }
         
+        var tailState = state
+        var tail = ""
+        
         while text.caretGravity.autoskip && !autocompletionStack.isEmpty {
             let skip: Next = autocompletionStack.pop()
             if modifiedString.count == modifiedCaretPosition {
@@ -193,7 +203,13 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
                     modifiedCaretPosition -= 1
                 }
             }
+            tailState = skip.state
+            if let insert = skip.insert {
+                tail = String(insert)
+            }
         }
+        
+        let tailPlaceholder = appendPlaceholder(withState: tailState, placeholder: tail)
         
         return Result(
             formattedText: CaretString(
@@ -203,7 +219,8 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
             ),
             extractedValue: extractedValue,
             affinity: affinity,
-            complete: self.noMandatoryCharactersLeftAfterState(state)
+            complete: self.noMandatoryCharactersLeftAfterState(state),
+            tailPlaceholder: tailPlaceholder
         )
     }
     
@@ -284,10 +301,10 @@ public class Mask: CustomDebugStringConvertible, CustomStringConvertible {
     
     /**
      While scanning through the input string in the `.apply(…)` method, the mask builds a graph of autocompletion steps.
-     This graph accumulates the results of `.autocomplete()` calls for each consecutive `State`, acting as a `stack` of
-     `Next` object instances.
+     This graph accumulates the results of `.autocomplete()` calls for each consecutive ``State``, acting as a `stack` of
+     ``Next`` object instances.
      
-     Each time the `State` returns `null` for its `.autocomplete()`, the graph resets empty.
+     Each time the ``State`` returns `null` for its `.autocomplete()`, the graph resets empty.
      */
     private struct AutocompletionStack {
         private var stack = [Next]()
@@ -394,3 +411,5 @@ private extension Mask {
     }
     
 }
+
+#endif

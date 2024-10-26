@@ -3,7 +3,7 @@
 // Created by Jeorge Taflanidi
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for InputMask.
 FOUNDATION_EXPORT double InputMaskVersionNumber;

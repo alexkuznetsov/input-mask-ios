@@ -3,6 +3,7 @@
 // Created by Jeorge Taflanidi
 //
 
+#if canImport(Foundation)
 
 import Foundation
 
@@ -10,7 +11,7 @@ import Foundation
 /**
  ### RTLMask
 
- A right-to-left ```Mask``` subclass. Applies format from the string end.
+ A right-to-left ``Mask`` subclass. Applies format from the string end.
  */
 public class RTLMask: Mask {
     private static var cache: [String: RTLMask] = [:]
@@ -37,3 +38,5 @@ public class RTLMask: Mask {
         return RTLCaretStringIterator(caretString: text)
     }
 }
+
+#endif
